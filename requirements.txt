@@ -3,6 +3,7 @@ nltk
 beautifulsoup4
 pandas
 numpy<2.0
+cython
 scipy<1.12.0
 gensim==4.3.2
 lxml
