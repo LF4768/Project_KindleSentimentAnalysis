@@ -17,6 +17,17 @@ x = st.text_area("")
 is_clicked = st.button("Click for Review")
 
 @st.cache_resource
+def load_nltk_resources():
+    try:
+        nltk.data.find('corpora/stopwords')
+        nltk.data.find('corpora/wordnet')
+    except LookupError:
+        nltk.download('stopwords')
+        nltk.download('wordnet')
+
+load_nltk_resources()
+
+@st.cache_resource
 def load_models():
     with open('models/Word2Vec_model.pkl', 'rb') as file:
         w2v_model = pickle.load(file)
@@ -27,9 +38,12 @@ def load_models():
 w2v_model, rf_model = load_models()
 
 def convertToVec(text,model) -> pd.DataFrame:
-    vectors = np.mean([model.wv[y] for y in x.split() if y in model.wv], axis=0)
+    vectors = [model.wv[y] for y in text.split() if y in model.wv]
+    if not vectors:
+        return pd.DataFrame(np.zeros((1,100)))
+    mean = np.mean(vectors,axis=0)
     df = pd.DataFrame()
-    df = pd.concat([df, pd.DataFrame(vectors.reshape(1,-1))], ignore_index=True)
+    df = pd.concat([df, pd.DataFrame(mean.reshape(1,-1))], ignore_index=True)
     return df
 
 def findResult(df,forest) -> bool:
